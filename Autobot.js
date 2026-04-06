@@ -41,7 +41,7 @@ var Autobot = {
             Autobot['botWnd'] = undefined
         };
 
-        Autobot.botWnd = Layout.dialogWindow.open('', Autobot.title + ' v<span style="font-size: 10px;">' + Autobot.version + '</span>', 500, 350, '', false);
+        Autobot.botWnd = Layout.dialogWindow.open('', Autobot.title + ' v' + Autobot.version, 500, 350, '', false);
         Autobot.botWnd.setHeight([350])
         Autobot.botWnd.setPosition(['center', 'center']);
         var _0xe20bx2 = Autobot.botWnd.getJQElement();

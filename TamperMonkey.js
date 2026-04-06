@@ -1,37 +1,39 @@
 // ==UserScript==
-// @name            Grepobot - Bot for Grepolis
-// @namespace       Grepobot
-// @description     Automated script for Grepolis
-// @author          Robinatus
-// @version         0.416
-// @match           *://*.grepolis.*/*
-// @grant           none
-// @run-at          document-end
+// @name Grepobot Final
+// @match *://*.grepolis.*/*
+// @grant none
+// @run-at document-end
 // ==/UserScript==
 
 (function () {
-    'use strict';
+    const base = location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files/";
 
-    function inject() {
-        if (document.head.getAttribute('xhttps')) return;
+    const scripts = [
+        "ConsoleLog.js",
+        "FormBuilder.js",
+        "DataExchanger.js",
+        "ModuleManager.js",
+        "Assistant.js",
+        "Autofarm.js",
+        "Autoculture.js",
+        "Autobuild.js",
+        "Autoattack.js",
+        "Autobot.js"
+    ];
 
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = location.protocol + '//cdn.jsdelivr.net/gh/omerpisun/fsn-files/Autobot.js';
-
-        var link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.type = 'text/css';
-        link.href = location.protocol + '//cdn.jsdelivr.net/gh/omerpisun/fsn-files/Autobot.css';
-
-        document.head.appendChild(script);
-        document.head.appendChild(link);
-        document.head.setAttribute('xhttps', '1');
+    function load(i) {
+        if (i >= scripts.length) {
+            if (typeof Autobot !== "undefined") Autobot.init();
+            return;
+        }
+        $.getScript(base + scripts[i]).done(() => load(i + 1));
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', inject);
-    } else {
-        inject();
-    }
+    load(0);
+
+    $('<link/>', {
+        rel: 'stylesheet',
+        href: base + 'Autobot.css'
+    }).appendTo('head');
+
 })();

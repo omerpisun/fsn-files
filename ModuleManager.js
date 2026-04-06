@@ -1,4 +1,5 @@
 ModuleManager = {
+
     modules: {
         Autofarm: { isOn: false },
         Autoculture: { isOn: false },
@@ -46,24 +47,70 @@ ModuleManager = {
 
     init: function () {
         this.loadPlayerTowns();
-        this.initButtons('Autofarm');
-        this.initButtons('Autobuild');
-        this.initButtons('Autoculture');
-        this.initButtons('Autoattack');
+    },
+
+    // 🔥 EN KRİTİK FIX
+    start: function () {
+
+        if (!this.playerTowns.length) return;
+
+        let added = false;
+
+        this.playerTowns.forEach(town => {
+
+            // FARM
+            if (typeof Autofarm !== "undefined" &&
+                this.modules.Autofarm.isOn &&
+                Autofarm.checkReady(town) === true) {
+
+                added = true;
+
+                this.Queue.add({
+                    fx: () => Autofarm.startFarming(town)
+                });
+            }
+
+            // BUILD
+            if (typeof Autobuild !== "undefined" &&
+                this.modules.Autobuild.isOn &&
+                Autobuild.checkReady?.(town) === true) {
+
+                added = true;
+
+                this.Queue.add({
+                    fx: () => Autobuild.startBuild(town)
+                });
+            }
+
+            // CULTURE
+            if (typeof Autoculture !== "undefined" &&
+                this.modules.Autoculture.isOn &&
+                Autoculture.checkReady?.(town) === true) {
+
+                added = true;
+
+                this.Queue.add({
+                    fx: () => Autoculture.startCulture(town)
+                });
+            }
+
+        });
+
+        if (added) {
+            this.Queue.start();
+        } else {
+            // 🔥 tekrar dene (loop)
+            clearTimeout(this.interval);
+            this.interval = setTimeout(() => this.start(), 5000);
+        }
     },
 
     stop: function () {
-        clearInterval(this.interval);
+        clearTimeout(this.interval);
         this.Queue.stop();
     },
 
     finished: function () {
         this.start();
-    },
-
-    start: function () {
-        if (!this.playerTowns.length) return;
-
-        this.Queue.start();
     }
 };

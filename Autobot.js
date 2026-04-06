@@ -1,8 +1,8 @@
 var Autobot = {
     title: 'Autobot',
-    version: '0.44',
+    version: '0.45',
     domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files/",
-    botWnd: '',
+    botWnd: undefined,
     isLogged: false,
 
     Account: {
@@ -15,64 +15,66 @@ var Autobot = {
     },
 
     init: function () {
+        this.isLogged = true; // Pencerenin açılması için bu şart
         ConsoleLog.Log('Initialize Autobot', 0);
-        Autobot.loadModules();
-        Autobot.initAjax();
-        Autobot.initMapTownFeature();
-        Autobot.fixMessage();
+        this.loadModules();
+        this.initAjax();
+        this.initMapTownFeature();
+        this.fixMessage();
 
-        // ✅ FIX: Assistant güvenli init
         if (typeof Assistant !== 'undefined') {
             Assistant.init();
         }
     },
 
     loadModules: function () {
-        ModuleManager.loadModules();
+        if (typeof ModuleManager !== 'undefined') {
+            ModuleManager.loadModules();
+        }
     },
 
     initWnd: function () {
-        if (!Autobot.isLogged) return;
+        if (!this.isLogged) return;
 
-        if (typeof Autobot.botWnd !== 'undefined') {
-            try { Autobot.botWnd.close(); } catch (e) {}
-            Autobot.botWnd = undefined;
+        if (typeof this.botWnd !== 'undefined') {
+            try { this.botWnd.close(); } catch (e) {}
+            this.botWnd = undefined;
         }
 
-        // ✅ FIX: HTML escape problemi kaldırıldı
-        Autobot.botWnd = Layout.dialogWindow.open(
+        // HTML etiket hatası burada düzeltildi
+        this.botWnd = Layout.dialogWindow.open(
             '',
-            Autobot.title + ' v' + Autobot.version,
+            this.title + ' v' + this.version, 
             500,
             350,
             '',
             false
         );
 
-        Autobot.botWnd.setHeight([350]);
-        Autobot.botWnd.setPosition(['center', 'center']);
+        this.botWnd.setHeight([350]);
+        this.botWnd.setPosition(['center', 'center']);
 
-        var el = Autobot.botWnd.getJQElement();
+        var el = this.botWnd.getJQElement();
 
         el.append($('<div/>', { class: 'menu_wrapper', style: 'left:78px; right:14px' })
             .append($('<ul/>', { class: 'menu_inner' })
-                .prepend(Autobot.addMenuItem('AUTHORIZE', 'Account', 'Account'))
-                .prepend(Autobot.addMenuItem('CONSOLE', 'Assistant', 'Assistant'))
-                .prepend(Autobot.addMenuItem('ASSISTANT', 'Console', 'Console'))
+                .prepend(this.addMenuItem('AUTHORIZE', 'Account', 'Account'))
+                .prepend(this.addMenuItem('ASSISTANT', 'Assistant', 'Assistant'))
+                .prepend(this.addMenuItem('CONSOLE', 'Console', 'Console'))
             )
         );
 
         if (typeof Autoattack !== 'undefined')
-            el.find('.menu_inner li:last-child').before(Autobot.addMenuItem('ATTACKMODULE','Attack','Autoattack'));
+            el.find('.menu_inner li:last-child').before(this.addMenuItem('ATTACKMODULE','Attack','Autoattack'));
 
         if (typeof Autobuild !== 'undefined')
-            el.find('.menu_inner li:last-child').before(Autobot.addMenuItem('CONSTRUCTMODULE','Build','Autobuild'));
+            el.find('.menu_inner li:last-child').before(this.addMenuItem('CONSTRUCTMODULE','Build','Autobuild'));
 
         if (typeof Autoculture !== 'undefined')
-            el.find('.menu_inner li:last-child').before(Autobot.addMenuItem('CULTUREMODULE','Culture','Autoculture'));
+            el.find('.menu_inner li:last-child').before(this.addMenuItem('CULTUREMODULE','Culture','Autoculture'));
 
         if (typeof Autofarm !== 'undefined')
-            el.find('.menu_inner li:last-child').before(Autobot.addMenuItem('FARMMODULE','Farm','Autofarm'));
+            el.find('.menu_inner li:last-child').before(this.addMenuItem('FARMMODULE','Farm','Autofarm'));
 
         $('#Autobot-AUTHORIZE').click();
     },
@@ -94,7 +96,7 @@ var Autobot = {
 
     getContent: function (name) {
         if (name === 'Console') return ConsoleLog.contentConsole();
-        if (name === 'Account') return Autobot.contentAccount();
+        if (name === 'Account') return this.contentAccount();
 
         if (typeof window[name] !== 'undefined') {
             return window[name].contentSettings();
@@ -115,7 +117,7 @@ var Autobot = {
     },
 
     fixMessage: function () {
-        if (typeof HumanMessage !== 'undefined') {
+        if (typeof HumanMessage !== 'undefined' && HumanMessage._initialize) {
             const old = HumanMessage._initialize;
             HumanMessage._initialize = function () {
                 old.apply(this, arguments);
@@ -124,11 +126,9 @@ var Autobot = {
         }
     },
 
-    // ✅ FIX: AJAX çakışma önlendi
     initAjax: function () {
         $(document).off('ajaxComplete.autobot')
         .on('ajaxComplete.autobot', function (_event, _xhr, _settings) {
-
             if (_settings.url.indexOf(Autobot.domain) === -1 &&
                 _settings.url.indexOf('/game/') !== -1 &&
                 _xhr.readyState === 4 && _xhr.status === 200) {
@@ -136,32 +136,62 @@ var Autobot = {
                 let url = _settings.url.split('?');
                 let action = url[0].substr(6);
 
-                if (typeof Autobuild !== 'undefined')
-                    Autobuild.calls(action);
-
-                if (typeof Autoattack !== 'undefined')
-                    Autoattack.calls(action, _xhr.responseText);
+                if (typeof Autobuild !== 'undefined') Autobuild.calls(action);
+                if (typeof Autoattack !== 'undefined') Autoattack.calls(action, _xhr.responseText);
             }
         });
+    },
+
+    // Eksik olan Toolbox (araç kutusu) fonksiyonu
+    initWindow: function () {
+        $('.nui_main_menu').css('top', '282px');
+        $('<div/>', { class: 'nui_bot_toolbox' })
+            .append($('<div/>', { class: 'bot_menu layout_main_sprite' })
+                .append($('<ul/>')
+                    .append($('<li/>', { id: 'Autofarm_onoff', class: 'disabled' }).append($('<span/>', { class: 'autofarm' })))
+                    .append($('<li/>', { id: 'Autoculture_onoff', class: 'disabled' }).append($('<span/>', { class: 'autoculture' })))
+                    .append($('<li/>', { id: 'Autobuild_onoff', class: 'disabled' }).append($('<span/>', { class: 'autobuild' })))
+                    .append($('<li/>', { id: 'Autoattack_onoff', class: 'disabled' }).append($('<span/>', { class: 'autoattack' })))
+                    .append($('<li/>').append(
+                        $('<span/>', { class: 'botsettings' }).on('click', function () {
+                            if (Autobot.isLogged) Autobot.initWnd();
+                        })
+                    ))
+                )
+            )
+            .append($('<div/>', { id: 'time_autobot', class: 'time_row' }))
+            .insertAfter('.nui_left_box');
+    },
+
+    // Eksik olan Harita özelliği fonksiyonu
+    initMapTownFeature: function () {
+        if (typeof MapTiles === 'undefined' || !MapTiles.createTownDiv) return;
+        var original = MapTiles.createTownDiv;
+        MapTiles.createTownDiv = function () {
+            var result = original.apply(this, arguments);
+            var data = arguments[0];
+            if (result && data) {
+                result.forEach(function (el) {
+                    if (el.className === 'flag town') {
+                        $(el).append('<div class="player_name">' + (data.player_name || '') + '</div>');
+                        $(el).append('<div class="town_name">' + (data.name || '') + '</div>');
+                        $(el).append('<div class="alliance_name">' + (data.alliance_name || '') + '</div>');
+                    }
+                });
+            }
+            return result;
+        };
     }
 };
 
-// =======================
-// INIT LOADER (KRİTİK FIX)
-// =======================
-
+// Modül yükleyici tetikleyici
 (function () {
-
     let interval = setInterval(function () {
-
         if ($('.nui_main_menu').length && !$.isEmptyObject(ITowns.towns)) {
-
             clearInterval(interval);
+            Autobot.initWindow();
+            Autobot.initMapTownFeature();
 
-            Autobot.initWindow?.();
-            Autobot.initMapTownFeature?.();
-
-            // ✅ FIX: Promise ALL (en kritik)
             Promise.all([
                 $.getScript(Autobot.domain + 'DataExchanger.js'),
                 $.getScript(Autobot.domain + 'ConsoleLog.js'),
@@ -173,12 +203,7 @@ var Autobot = {
                 console.log("Autobot modules loaded ✅");
                 Autobot.init();
             })
-            .catch(err => {
-                console.error("Module load error ❌", err);
-            });
-
+            .catch(err => console.error("Module load error ❌", err));
         }
-
     }, 100);
-
 })();

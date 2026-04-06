@@ -15,11 +15,15 @@ var Autobot = {
     },
 
     init: function () {
+        this.isLogged = true;
         ConsoleLog.Log('Initialize Autobot', 0);
+
         this.loadModules();
         this.initAjax();
         this.initMapTownFeature();
         this.fixMessage();
+        this.initWindow();
+
         if (typeof Assistant !== "undefined") Assistant.init();
     },
 
@@ -56,18 +60,10 @@ var Autobot = {
             .append(this.addMenuItem('CONSOLE', 'Console', 'Console'))
             .append(this.addMenuItem('ASSISTANT', 'Assistant', 'Assistant'));
 
-        if (typeof Autoattack !== 'undefined') {
-            menu.append(this.addMenuItem('ATTACK', 'Attack', 'Autoattack'));
-        }
-        if (typeof Autobuild !== 'undefined') {
-            menu.append(this.addMenuItem('BUILD', 'Build', 'Autobuild'));
-        }
-        if (typeof Autoculture !== 'undefined') {
-            menu.append(this.addMenuItem('CULTURE', 'Culture', 'Autoculture'));
-        }
-        if (typeof Autofarm !== 'undefined') {
-            menu.append(this.addMenuItem('FARM', 'Farm', 'Autofarm'));
-        }
+        if (typeof Autoattack !== 'undefined') menu.append(this.addMenuItem('ATTACK', 'Attack', 'Autoattack'));
+        if (typeof Autobuild !== 'undefined') menu.append(this.addMenuItem('BUILD', 'Build', 'Autobuild'));
+        if (typeof Autoculture !== 'undefined') menu.append(this.addMenuItem('CULTURE', 'Culture', 'Autoculture'));
+        if (typeof Autofarm !== 'undefined') menu.append(this.addMenuItem('FARM', 'Farm', 'Autofarm'));
 
         el.append($('<div/>', {
             class: 'menu_wrapper',
@@ -85,6 +81,7 @@ var Autobot = {
                 id: 'Autobot-' + id,
                 rel: module
             }).on('click', function () {
+
                 Autobot.botWnd.getJQElement()
                     .find('a.submenu_link')
                     .removeClass('active');
@@ -100,6 +97,7 @@ var Autobot = {
                     var h = $('.terminal-output')[0]?.scrollHeight || 0;
                     t.scrollTop(h);
                 }
+
             }).append(
                 $('<span/>', { class: 'left' }).append(
                     $('<span/>', { class: 'right' }).append(
@@ -160,11 +158,10 @@ var Autobot = {
 
     initAjax: function () {
         $(document).ajaxComplete(function (e, xhr, settings) {
-            if (!settings || !settings.url) return;
 
+            if (!settings || !settings.url) return;
             if (settings.url.indexOf('/game/') === -1) return;
             if (settings.url.indexOf(Autobot.domain) !== -1) return;
-
             if (xhr.readyState !== 4 || xhr.status !== 200) return;
 
             var parts = settings.url.split('?');
@@ -179,6 +176,7 @@ var Autobot = {
             if (typeof Autoattack !== 'undefined' && Autoattack.calls) {
                 Autoattack.calls(action, xhr.responseText);
             }
+
         });
     },
 
@@ -281,38 +279,5 @@ var Autobot = {
 
         return obj;
     };
-
-    var wait = setInterval(function () {
-
-        if ($('.nui_main_menu').length && !$.isEmptyObject(ITowns.towns)) {
-
-            clearInterval(wait);
-
-            Autobot.initWindow();
-            Autobot.initMapTownFeature();
-
-            $.when(
-                $.getScript(Autobot.domain + 'DataExchanger.js'),
-                $.getScript(Autobot.domain + 'ConsoleLog.js'),
-                $.getScript(Autobot.domain + 'FormBuilder.js'),
-                $.getScript(Autobot.domain + 'ModuleManager.js'),
-                $.getScript(Autobot.domain + 'Assistant.js')
-            ).done(function () {
-                Autobot.init();
-            });
-
-        } else if (/grepolis\.com\/start\?nosession/.test(window.location.href)) {
-
-            clearInterval(wait);
-
-            $.when(
-                $.getScript(Autobot.domain + 'DataExchanger.js'),
-                $.getScript(Autobot.domain + 'Redirect.js')
-            ).done(function () {
-                Autobot.checkAutoRelogin?.();
-            });
-        }
-
-    }, 100);
 
 })();

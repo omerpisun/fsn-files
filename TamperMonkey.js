@@ -1,78 +1,70 @@
 // ==UserScript==
-// @name Grepobot FINAL - Debug Mode
-// @match *://*.grepolis.*/*
-// @grant none
-// @run-at document-end
+// @name         Grepobot FINAL - Taze Kurulum
+// @match        *://*.grepolis.*/*
+// @grant        none
+// @run-at       document-start
 // ==/UserScript==
 
 (function () {
     'use strict';
 
-    // Rastgele bir sayı ekleyerek jsDelivr'ın eski dosyayı vermesini engelliyoruz
-    const version = "?v=" + Math.floor(Math.random() * 10000);
+    // Önbelleği (cache) kırmak için her seferinde farklı bir sayı ekliyoruz
+    const version = "?v=" + Math.random();
     const base = "https://cdn.jsdelivr.net/gh/omerpisun/fsn-files@main/";
 
+    // Yükleme sırası çok önemlidir!
     const scripts = [
         "ConsoleLog.js",
         "FormBuilder.js",
         "DataExchanger.js",
         "ModuleManager.js",
         "Assistant.js",
-        "Autofarm.js",
-        "Autoculture.js",
-        "Autobuild.js",
-        "Autoattack.js",
         "Autobot.js"
     ];
 
-    function load(i) {
-        if (i >= scripts.length) {
-            console.log("✅ Tüm modüller başarıyla indirildi.");
-            waitForGame();
+    function loadScript(index) {
+        if (index >= scripts.length) {
+            console.log("✅ Tüm dosyalar indirildi. Oyunun hazır olması bekleniyor...");
+            checkGameReady();
             return;
         }
 
-        const scriptUrl = base + scripts[i] + version;
-        
-        $.getScript(scriptUrl)
-            .done(() => {
-                console.log("📥 Yüklendi: " + scripts[i]);
-                load(i + 1);
-            })
-            .fail((jqxhr, settings, exception) => {
-                console.error("❌ HATA: " + scripts[i] + " yüklenemedi! Linki kontrol et: " + scriptUrl);
-            });
+        const url = base + scripts[index] + version;
+        const s = document.createElement('script');
+        s.src = url;
+        s.onload = () => {
+            console.log("📥 Başarıyla yüklendi: " + scripts[index]);
+            loadScript(index + 1);
+        };
+        s.onerror = () => {
+            console.error("❌ YÜKLENEMEDİ: " + scripts[index] + " - Link hatalı olabilir: " + url);
+        };
+        document.head.appendChild(s);
     }
 
-    function waitForGame() {
-        // Oyunun tamamen yüklendiğinden emin olalım
-        if (typeof Game !== "undefined" && typeof ITowns !== "undefined" && ITowns.towns) {
-            console.log("🎮 Oyun hazır. Bot başlatılıyor...");
-            try {
-                if (typeof Autobot !== "undefined") {
-                    Autobot.init();
-                    console.log("🚀 Autobot.init() çalıştırıldı.");
-                } else {
-                    console.error("❌ Kritik Hata: Autobot objesi bulunamadı!");
-                }
-            } catch (e) {
-                console.error("💥 Başlatma hatası:", e);
+    function checkGameReady() {
+        // Oyunun temel objeleri yüklenmiş mi?
+        if (typeof Game !== "undefined" && typeof ITowns !== "undefined") {
+            console.log("🎮 Oyun objeleri bulundu. Bot başlatılıyor...");
+            if (typeof Autobot !== "undefined") {
+                Autobot.init();
+                console.log("🚀 BOT AKTİF!");
+            } else {
+                console.error("❌ Hata: Autobot tanımlanamadı. Autobot.js dosyasını kontrol et.");
             }
         } else {
-            setTimeout(waitForGame, 1000);
+            setTimeout(checkGameReady, 1000);
         }
     }
 
-    // jQuery hazır olana kadar bekle
-    const checkJQuery = setInterval(() => {
-        if (typeof $ !== "undefined" && $.getScript) {
-            clearInterval(checkJQuery);
-            console.log("🔗 jQuery aktif. Yükleme başlıyor...");
-            load(0);
-            
-            // CSS Yükle
-            $('<link/>', { rel: 'stylesheet', href: base + 'Autobot.css' + version }).appendTo('head');
-        }
-    }, 500);
+    // CSS Yükle
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = base + 'Autobot.css' + version;
+    document.head.appendChild(l);
+
+    // Başlat
+    console.log("🛠️ Grepobot yükleme süreci başladı...");
+    loadScript(0);
 
 })();

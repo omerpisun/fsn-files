@@ -1,7 +1,6 @@
 var Autobot = {
     title: 'Autobot',
     version: '0.45',
-    // Önbellek sorununu önlemek için @main dalı kullanılıyor
     domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@main/",
     botWnd: undefined,
     isLogged: false,
@@ -16,7 +15,7 @@ var Autobot = {
     },
 
     init: function () {
-        this.isLogged = true; 
+        this.isLogged = true;
         ConsoleLog.Log('Initialize Autobot', 0);
         this.loadModules();
         this.initAjax();
@@ -37,65 +36,59 @@ var Autobot = {
     initWnd: function () {
         if (!this.isLogged) return;
 
-        if (typeof this.botWnd !== 'undefined') {
+        if (this.botWnd) {
             try { this.botWnd.close(); } catch (e) {}
-            this.botWnd = undefined;
         }
 
-        // Başlıktaki HTML hatası temizlendi
+        // ✅ TITLE FIX
         this.botWnd = Layout.dialogWindow.open(
             '',
-            this.title + ' v' + this.version, 
-            500,
-            350,
+            this.title + ' v' + this.version,
+            520,
+            380,
             '',
             false
         );
 
-        this.botWnd.setHeight([350]);
         this.botWnd.setPosition(['center', 'center']);
 
         var el = this.botWnd.getJQElement();
 
-        // Menü yapısı düzeltildi
-        el.append($('<div/>', { class: 'menu_wrapper', style: 'left:78px; right:14px; overflow:visible;' })
-            .append($('<ul/>', { class: 'menu_inner', style: 'display:flex; white-space:nowrap;' })
-                .prepend(this.addMenuItem('AUTHORIZE', 'Account', 'Account'))
-                .prepend(this.addMenuItem('ASSISTANT', 'Assistant', 'Assistant'))
-                .prepend(this.addMenuItem('CONSOLE', 'Console', 'Console'))
-            )
+        // ✅ MENU FIX (EN KRİTİK)
+        el.append(
+            $('<div/>', { class: 'menu_wrapper', style: 'padding:5px;' })
+                .append(
+                    $('<ul/>', {
+                        class: 'menu_inner',
+                        style: 'display:flex; flex-wrap:wrap; gap:6px; justify-content:center;'
+                    })
+                        .append(this.addMenuItem('AUTHORIZE', 'Account', 'Account'))
+                        .append(this.addMenuItem('FARMMODULE', 'Farm', 'Autofarm'))
+                        .append(this.addMenuItem('CULTUREMODULE', 'Culture', 'Autoculture'))
+                        .append(this.addMenuItem('CONSTRUCTMODULE', 'Build', 'Autobuild'))
+                        .append(this.addMenuItem('ATTACKMODULE', 'Attack', 'Autoattack'))
+                        .append(this.addMenuItem('ASSISTANT', 'Assistant', 'Assistant'))
+                        .append(this.addMenuItem('CONSOLE', 'Console', 'Console'))
+                )
         );
-
-        // Modül kontrolleri
-        if (typeof Autoattack !== 'undefined')
-            el.find('.menu_inner li:last-child').before(this.addMenuItem('ATTACKMODULE','Attack','Autoattack'));
-
-        if (typeof Autobuild !== 'undefined')
-            el.find('.menu_inner li:last-child').before(this.addMenuItem('CONSTRUCTMODULE','Build','Autobuild'));
-
-        if (typeof Autoculture !== 'undefined')
-            el.find('.menu_inner li:last-child').before(this.addMenuItem('CULTUREMODULE','Culture','Autoculture'));
-
-        if (typeof Autofarm !== 'undefined')
-            el.find('.menu_inner li:last-child').before(this.addMenuItem('FARMMODULE','Farm','Autofarm'));
 
         $('#Autobot-AUTHORIZE').click();
     },
 
+    // ✅ MENU ITEM FIX
     addMenuItem: function (id, text, rel) {
-        // Yazıların üst üste binmesini engelleyen inline stiller eklendi
-        return $('<li style="display:inline-block; margin-right:15px; float:left;">').append(
+        return $('<li style="display:inline-block;">').append(
             $('<a/>', {
                 class: 'submenu_link',
                 href: '#',
                 id: 'Autobot-' + id,
                 rel: rel,
-                style: 'color:#fcc02e; font-weight:bold; text-decoration:none; font-size:11px;'
+                style: 'color:#fcc02e; font-weight:bold; font-size:11px; padding:3px 6px; display:inline-block;'
             }).click(function () {
                 Autobot.botWnd.getJQElement().find('a').removeClass('active');
                 $(this).addClass('active');
                 Autobot.botWnd.setContent2(Autobot.getContent($(this).attr('rel')));
-            }).append($('<span/>').text(text))
+            }).text(text)
         );
     },
 
@@ -133,46 +126,41 @@ var Autobot = {
 
     initAjax: function () {
         $(document).off('ajaxComplete.autobot')
-        .on('ajaxComplete.autobot', function (_event, _xhr, _settings) {
-            if (_settings.url.indexOf(Autobot.domain) === -1 &&
-                _settings.url.indexOf('/game/') !== -1 &&
-                _xhr.readyState === 4 && _xhr.status === 200) {
+            .on('ajaxComplete.autobot', function (_event, _xhr, _settings) {
+                if (_settings.url.indexOf(Autobot.domain) === -1 &&
+                    _settings.url.indexOf('/game/') !== -1 &&
+                    _xhr.readyState === 4 && _xhr.status === 200) {
 
-                let url = _settings.url.split('?');
-                let action = url[0].substr(6);
+                    let url = _settings.url.split('?');
+                    let action = url[0].substr(6);
 
-                if (typeof Autobuild !== 'undefined') Autobuild.calls(action);
-                if (typeof Autoattack !== 'undefined') Autoattack.calls(action, _xhr.responseText);
-            }
-        });
+                    if (typeof Autobuild !== 'undefined') Autobuild.calls(action);
+                    if (typeof Autoattack !== 'undefined') Autoattack.calls(action, _xhr.responseText);
+                }
+            });
     },
 
     initWindow: function () {
         $('.nui_main_menu').css('top', '282px');
+
         $('<div/>', { class: 'nui_bot_toolbox' })
             .append($('<div/>', { class: 'bot_menu layout_main_sprite' })
                 .append($('<ul/>')
-                    .append($('<li/>', { id: 'Autofarm_onoff', class: 'disabled' }).append($('<span/>', { class: 'autofarm' })))
-                    .append($('<li/>', { id: 'Autoculture_onoff', class: 'disabled' }).append($('<span/>', { class: 'autoculture' })))
-                    .append($('<li/>', { id: 'Autobuild_onoff', class: 'disabled' }).append($('<span/>', { class: 'autobuild' })))
-                    .append($('<li/>', { id: 'Autoattack_onoff', class: 'disabled' }).append($('<span/>', { class: 'autoattack' })))
-                    .append($('<li/>').append(
-                        $('<span/>', { class: 'botsettings' }).on('click', function () {
-                            if (Autobot.isLogged) Autobot.initWnd();
-                        })
-                    ))
+                    .append($('<li/>').append($('<span/>', { class: 'botsettings' }).click(() => this.initWnd())))
                 )
             )
-            .append($('<div/>', { id: 'time_autobot', class: 'time_row' }))
             .insertAfter('.nui_left_box');
     },
 
     initMapTownFeature: function () {
         if (typeof MapTiles === 'undefined' || !MapTiles.createTownDiv) return;
+
         var original = MapTiles.createTownDiv;
+
         MapTiles.createTownDiv = function () {
             var result = original.apply(this, arguments);
             var data = arguments[0];
+
             if (result && data) {
                 result.forEach(function (el) {
                     if (el.className === 'flag town') {
@@ -182,6 +170,7 @@ var Autobot = {
                     }
                 });
             }
+
             return result;
         };
     }
@@ -190,9 +179,10 @@ var Autobot = {
 (function () {
     let interval = setInterval(function () {
         if ($('.nui_main_menu').length && !$.isEmptyObject(ITowns.towns)) {
+
             clearInterval(interval);
+
             Autobot.initWindow();
-            Autobot.initMapTownFeature();
 
             Promise.all([
                 $.getScript(Autobot.domain + 'DataExchanger.js'),

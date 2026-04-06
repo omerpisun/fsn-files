@@ -1,7 +1,7 @@
 var Autobot = {
     title: 'Autobot',
     version: '0.45',
-    domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files/",
+domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files/",
     botWnd: null,
     isLogged: false,
 

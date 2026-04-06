@@ -1,8 +1,8 @@
 var Autobot = {
     title: 'Autobot',
-    version: '0.44',
-    domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files/",
-    botWnd: '',
+    version: '0.45',
+    domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@main/",
+    botWnd: undefined,
     isLogged: false,
     Account: {
         player_id: Game.player_id,

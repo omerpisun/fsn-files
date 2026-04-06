@@ -141,6 +141,35 @@ var Autobot = {
     },
 
     initWindow: function () {
+        var style = document.createElement('style');
+style.innerHTML = `
+.menu_wrapper {
+    width: 100% !important;
+    overflow: visible !important;
+}
+
+.menu_inner {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 5px !important;
+}
+
+.menu_inner li {
+    float: none !important;
+    display: inline-block !important;
+    margin: 0 !important;
+}
+
+.menu_inner a {
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+    font-size: 11px !important;
+}
+`;
+document.head.appendChild(style);
         $('.nui_main_menu').css('top', '282px');
 
         $('<div/>', { class: 'nui_bot_toolbox' })

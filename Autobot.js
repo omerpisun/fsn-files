@@ -40,7 +40,6 @@ var Autobot = {
             try { this.botWnd.close(); } catch (e) {}
         }
 
-        // ✅ TITLE FIX
         this.botWnd = Layout.dialogWindow.open(
             '',
             this.title + ' v' + this.version,
@@ -53,9 +52,15 @@ var Autobot = {
         this.botWnd.setPosition(['center', 'center']);
 
         var el = this.botWnd.getJQElement();
+        var content = el.find('.ui-dialog-content');
 
-        // ✅ MENU FIX (EN KRİTİK)
-        el.append(
+        // 🔥 HEADER İLE ÇAKIŞMAYI KESİYOR
+        content.css({
+            marginTop: '35px'
+        });
+
+        // 🔥 MENÜ ARTIK CONTENT İÇİNDE
+        content.prepend(
             $('<div/>', { class: 'menu_wrapper', style: 'padding:5px;' })
                 .append(
                     $('<ul/>', {
@@ -75,7 +80,6 @@ var Autobot = {
         $('#Autobot-AUTHORIZE').click();
     },
 
-    // ✅ MENU ITEM FIX
     addMenuItem: function (id, text, rel) {
         return $('<li style="display:inline-block;">').append(
             $('<a/>', {
@@ -83,7 +87,7 @@ var Autobot = {
                 href: '#',
                 id: 'Autobot-' + id,
                 rel: rel,
-                style: 'color:#fcc02e; font-weight:bold; font-size:11px; padding:3px 6px; display:inline-block;'
+                style: 'color:#fcc02e; font-weight:bold; font-size:11px; padding:4px 8px; display:inline-block;'
             }).click(function () {
                 Autobot.botWnd.getJQElement().find('a').removeClass('active');
                 $(this).addClass('active');
@@ -141,67 +145,17 @@ var Autobot = {
     },
 
     initWindow: function () {
-        var style = document.createElement('style');
-style.innerHTML = `
-.menu_wrapper {
-    width: 100% !important;
-    overflow: visible !important;
-}
-
-.menu_inner {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    padding: 5px !important;
-}
-
-.menu_inner li {
-    float: none !important;
-    display: inline-block !important;
-    margin: 0 !important;
-}
-
-.menu_inner a {
-    display: inline-block !important;
-    padding: 4px 8px !important;
-    white-space: nowrap !important;
-    font-size: 11px !important;
-}
-`;
-document.head.appendChild(style);
         $('.nui_main_menu').css('top', '282px');
 
         $('<div/>', { class: 'nui_bot_toolbox' })
             .append($('<div/>', { class: 'bot_menu layout_main_sprite' })
                 .append($('<ul/>')
-                    .append($('<li/>').append($('<span/>', { class: 'botsettings' }).click(() => this.initWnd())))
+                    .append($('<li/>').append(
+                        $('<span/>', { class: 'botsettings' }).click(() => this.initWnd())
+                    ))
                 )
             )
             .insertAfter('.nui_left_box');
-    },
-
-    initMapTownFeature: function () {
-        if (typeof MapTiles === 'undefined' || !MapTiles.createTownDiv) return;
-
-        var original = MapTiles.createTownDiv;
-
-        MapTiles.createTownDiv = function () {
-            var result = original.apply(this, arguments);
-            var data = arguments[0];
-
-            if (result && data) {
-                result.forEach(function (el) {
-                    if (el.className === 'flag town') {
-                        $(el).append('<div class="player_name">' + (data.player_name || '') + '</div>');
-                        $(el).append('<div class="town_name">' + (data.name || '') + '</div>');
-                        $(el).append('<div class="alliance_name">' + (data.alliance_name || '') + '</div>');
-                    }
-                });
-            }
-
-            return result;
-        };
     }
 };
 

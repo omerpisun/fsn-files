@@ -1,55 +1,88 @@
 var DataExchanger = {
 
+    // =========================
+    // 🔥 SAFE HANDLER (EN KRİTİK)
+    // =========================
     default_handler: function (callback, full) {
         return function (response) {
 
-            if (!response || !response.json) return;
+            try {
 
-            var json = response.json;
+                if (!response || !response.json) return;
 
-            if (json.redirect) {
-                window.location.href = json.redirect;
-                return;
+                var json = response.json;
+                if (!json) return;
+
+                // redirect
+                if (json.redirect) {
+                    window.location.href = json.redirect;
+                    return;
+                }
+
+                // maintenance
+                if (json.maintenance && typeof MaintenanceWindowFactory !== "undefined") {
+                    return MaintenanceWindowFactory.openMaintenanceWindow(json.maintenance);
+                }
+
+                // notifications
+                if (json.notifications && typeof NotificationLoader !== "undefined") {
+                    NotificationLoader.recvNotifyData(json, 'data');
+                    delete json.notifications;
+                    delete json.next_fetch_in;
+                }
+
+                // daily gift (safe)
+                if (json.bar && json.bar.gift && json.bar.gift.length) {
+                    try {
+                        if (typeof require !== "undefined") {
+                            var ids = require('game/windows/ids');
+                            var wnd = ids.DAILY_LOGIN;
+
+                            if (!WM.isOpened(wnd)) {
+                                HelperLayout.openDailyLoginGift(
+                                    HelperLayout.getGiftData(json.bar.gift, 'gift.daily_reward')
+                                );
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                return callback ? callback(full ? response : json) : null;
+
+            } catch (e) {
+                console.error("DataExchanger handler error:", e);
             }
-
-            if (json.maintenance) {
-                return MaintenanceWindowFactory.openMaintenanceWindow(json.maintenance);
-            }
-
-            if (json.notifications && typeof NotificationLoader !== "undefined") {
-                NotificationLoader.recvNotifyData(json, 'data');
-                delete json.notifications;
-                delete json.next_fetch_in;
-            }
-
-            if (json.bar && json.bar.gift && json.bar.gift.length) {
-                try {
-                    var ids = require('game/windows/ids');
-                    var wnd = ids.DAILY_LOGIN;
-                    var gift = HelperLayout.getGiftData(json.bar.gift, 'gift.daily_reward');
-
-                    if (gift && !WM.isOpened(wnd)) {
-                        HelperLayout.openDailyLoginGift(gift);
-                    }
-                } catch (e) {}
-            }
-
-            return callback ? callback(full ? response : json) : null;
         };
     },
 
+    // =========================
+    // 🔥 AJAX WRAPPER
+    // =========================
     ajax: function (url, data, method, callback, full) {
-        $.ajax({
-            url: url,
-            data: data,
-            method: method || 'GET',
-            dataType: 'json',
-            success: this.default_handler(callback, full),
-            error: function () {}
-        });
+
+        try {
+            $.ajax({
+                url: url,
+                data: data,
+                method: method || 'GET',
+                dataType: 'json',
+                success: this.default_handler(callback, full),
+                error: function (xhr) {
+                    console.error("AJAX error:", xhr?.status);
+                }
+            });
+        } catch (e) {
+            console.error("AJAX crash:", e);
+        }
     },
 
+    // =========================
+    // 📦 GAME DATA
+    // =========================
     game_data: function (town_id, cb) {
+
+        if (!town_id) return;
+
         var url = location.protocol + '//' + document.domain + '/game/data?' + $.param({
             town_id: town_id,
             action: 'get',
@@ -69,7 +102,13 @@ var DataExchanger = {
         }, 'POST', cb);
     },
 
+    // =========================
+    // 🔄 SWITCH
+    // =========================
     switch_town: function (town_id, cb) {
+
+        if (!town_id) return;
+
         var url = location.protocol + '//' + document.domain + '/game/index?' + $.param({
             town_id: town_id,
             action: 'switch_town',
@@ -79,7 +118,13 @@ var DataExchanger = {
         this.ajax(url, {}, 'GET', cb);
     },
 
+    // =========================
+    // 💰 SINGLE FARM
+    // =========================
     claim_load: function (town_id, type, time, target_id, cb) {
+
+        if (!town_id || !target_id) return;
+
         var url = location.protocol + '//' + document.domain + '/game/farm_town_info?' + $.param({
             town_id: town_id,
             action: 'claim_load',
@@ -97,7 +142,13 @@ var DataExchanger = {
         }, 'POST', cb);
     },
 
+    // =========================
+    // 💣 CAPTAIN FARM (TOPLU)
+    // =========================
     claim_loads: function (town_id, ids, type, time, cb) {
+
+        if (!ids || !ids.length) return;
+
         var url = location.protocol + '//' + document.domain + '/game/farm_town_overviews?' + $.param({
             town_id: Game.townId,
             action: 'claim_loads',
@@ -116,7 +167,13 @@ var DataExchanger = {
         }, 'POST', cb);
     },
 
+    // =========================
+    // 🏗 BUILD
+    // =========================
     building_main: function (town_id, cb) {
+
+        if (!town_id) return;
+
         var url = location.protocol + '//' + document.domain + '/game/building_main';
 
         this.ajax(url, {
@@ -131,6 +188,9 @@ var DataExchanger = {
     },
 
     building_barracks: function (town_id, data, cb) {
+
+        if (!town_id) return;
+
         var url = location.protocol + '//' + document.domain + '/game/building_barracks?' + $.param({
             town_id: town_id,
             action: 'build',
@@ -142,7 +202,11 @@ var DataExchanger = {
         }, 'POST', cb);
     },
 
+    // =========================
+    // 🔧 GENERIC
+    // =========================
     frontend_bridge: function (town_id, data, cb) {
+
         var url = location.protocol + '//' + document.domain + '/game/frontend_bridge?' + $.param({
             town_id: town_id,
             action: 'execute',
@@ -154,7 +218,13 @@ var DataExchanger = {
         }, 'POST', cb);
     },
 
+    // =========================
+    // ⚔ ATTACK
+    // =========================
     town_info_attack: function (town_id, attack, cb) {
+
+        if (!attack) return;
+
         var url = location.protocol + '//' + document.domain + '/game/town_info';
 
         this.ajax(url, {
@@ -173,6 +243,9 @@ var DataExchanger = {
     },
 
     send_units: function (town_id, type, target_id, units, cb) {
+
+        if (!town_id || !target_id) return;
+
         var url = location.protocol + '//' + document.domain + '/game/town_info?' + $.param({
             town_id: town_id,
             action: 'send_units',

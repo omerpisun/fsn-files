@@ -1,22 +1,37 @@
 // ==UserScript==
-// @name			Grepobot - Bot for Grepolis
-// @namespace		Grepobot - Bot for Grepolis
-// @description		Grepobot is a automated script that helps you do stuff in Grepolis automaticaly! One of the best Grepolis bots out there.
-// @autor			Robinatus
-// @version			0.415
-// @include			http://*.grepolis.*/*
-// @include			https://*.grepolis.*/*
+// @name            Grepobot - Bot for Grepolis
+// @namespace       Grepobot
+// @description     Automated script for Grepolis
+// @author          Robinatus
+// @version         0.416
+// @match           *://*.grepolis.*/*
+// @grant           none
+// @run-at          document-end
 // ==/UserScript==
-(function(){
-    var script = document.createElement('script'),
-        link = document.createElement('link'),
-        head = document.getElementsByTagName('head')[0];
-    script.type = 'text/javascript';
-    link.type = 'text/css';
-    link.rel = 'stylesheet';
-    script.src = location.protocol+'//cdn.jsdelivr.net/gh/omerpisun/fsn-files/Autobot.js';
-    link.href = location.protocol+'//cdn.jsdelivr.net/gh/omerpisun/fsn-files/Autobot.css';
-    head.appendChild(script);
-    head.appendChild(link);
-    head.setAttribute('xhttps', 1);
+
+(function () {
+    'use strict';
+
+    function inject() {
+        if (document.head.getAttribute('xhttps')) return;
+
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = location.protocol + '//cdn.jsdelivr.net/gh/omerpisun/fsn-files/Autobot.js';
+
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = location.protocol + '//cdn.jsdelivr.net/gh/omerpisun/fsn-files/Autobot.css';
+
+        document.head.appendChild(script);
+        document.head.appendChild(link);
+        document.head.setAttribute('xhttps', '1');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inject);
+    } else {
+        inject();
+    }
 })();

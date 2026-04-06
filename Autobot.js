@@ -41,7 +41,7 @@ var Autobot = {
             Autobot['botWnd'] = undefined
         };
 
-        Autobot.botWnd = Layout.dialogWindow.open('', Autobot.title + ' v' + Autobot.version, 500, 350, '', false);
+        Autobot.botWnd = Layout.dialogWindow.open('', Autobot.title + Autobot.version'', false);
         Autobot.botWnd.setHeight([350])
         Autobot.botWnd.setPosition(['center', 'center']);
         var _0xe20bx2 = Autobot.botWnd.getJQElement();
@@ -188,7 +188,7 @@ var Autobot = {
 
     createNotification: function (_0xe20bx30, _0xe20bx31) {
         var _0xe20bx32 = (typeof Layout['notify'] == 'undefined') ? new NotificationHandler() : Layout;
-       _0xe20bx32.notify(null, _0xe20bx30, '<b>Autobot</b> ' + _0xe20bx31);
+        _0xe20bx32['notify']($('#notification_area>.notification')['length'] + 1, _0xe20bx30, '<span><b>' + 'Autobot' + '</b></span>' + _0xe20bx31 + '<span class=\'small notification_date\'>' + 'Version ' + Autobot['version'] + '</span>')
     },
     toHHMMSS: function (_0xe20bx33) {
         var _0xe20bx34 = ~~(_0xe20bx33 / 3600);

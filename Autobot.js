@@ -1,7 +1,8 @@
 var Autobot = {
     title: 'Autobot',
     version: '0.45',
-domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@main/",
+    // Önbellek sorununu önlemek için @main dalı kullanılıyor
+    domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@main/",
     botWnd: undefined,
     isLogged: false,
 
@@ -15,7 +16,7 @@ domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@ma
     },
 
     init: function () {
-        this.isLogged = true; // Pencerenin açılması için bu şart
+        this.isLogged = true; 
         ConsoleLog.Log('Initialize Autobot', 0);
         this.loadModules();
         this.initAjax();
@@ -41,7 +42,7 @@ domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@ma
             this.botWnd = undefined;
         }
 
-        // HTML etiket hatası burada düzeltildi
+        // Başlıktaki HTML hatası temizlendi
         this.botWnd = Layout.dialogWindow.open(
             '',
             this.title + ' v' + this.version, 
@@ -56,14 +57,16 @@ domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@ma
 
         var el = this.botWnd.getJQElement();
 
-        el.append($('<div/>', { class: 'menu_wrapper', style: 'left:78px; right:14px' })
-            .append($('<ul/>', { class: 'menu_inner' })
+        // Menü yapısı düzeltildi
+        el.append($('<div/>', { class: 'menu_wrapper', style: 'left:78px; right:14px; overflow:visible;' })
+            .append($('<ul/>', { class: 'menu_inner', style: 'display:flex; white-space:nowrap;' })
                 .prepend(this.addMenuItem('AUTHORIZE', 'Account', 'Account'))
                 .prepend(this.addMenuItem('ASSISTANT', 'Assistant', 'Assistant'))
                 .prepend(this.addMenuItem('CONSOLE', 'Console', 'Console'))
             )
         );
 
+        // Modül kontrolleri
         if (typeof Autoattack !== 'undefined')
             el.find('.menu_inner li:last-child').before(this.addMenuItem('ATTACKMODULE','Attack','Autoattack'));
 
@@ -80,12 +83,14 @@ domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@ma
     },
 
     addMenuItem: function (id, text, rel) {
-        return $('<li/>').append(
+        // Yazıların üst üste binmesini engelleyen inline stiller eklendi
+        return $('<li style="display:inline-block; margin-right:15px; float:left;">').append(
             $('<a/>', {
                 class: 'submenu_link',
                 href: '#',
                 id: 'Autobot-' + id,
-                rel: rel
+                rel: rel,
+                style: 'color:#fcc02e; font-weight:bold; text-decoration:none; font-size:11px;'
             }).click(function () {
                 Autobot.botWnd.getJQElement().find('a').removeClass('active');
                 $(this).addClass('active');
@@ -142,7 +147,6 @@ domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@ma
         });
     },
 
-    // Eksik olan Toolbox (araç kutusu) fonksiyonu
     initWindow: function () {
         $('.nui_main_menu').css('top', '282px');
         $('<div/>', { class: 'nui_bot_toolbox' })
@@ -163,7 +167,6 @@ domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@ma
             .insertAfter('.nui_left_box');
     },
 
-    // Eksik olan Harita özelliği fonksiyonu
     initMapTownFeature: function () {
         if (typeof MapTiles === 'undefined' || !MapTiles.createTownDiv) return;
         var original = MapTiles.createTownDiv;
@@ -184,7 +187,6 @@ domain: window.location.protocol + "//cdn.jsdelivr.net/gh/omerpisun/fsn-files@ma
     }
 };
 
-// Modül yükleyici tetikleyici
 (function () {
     let interval = setInterval(function () {
         if ($('.nui_main_menu').length && !$.isEmptyObject(ITowns.towns)) {

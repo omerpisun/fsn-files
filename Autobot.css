@@ -1,57 +1,29 @@
-/* =========================
-   🔹 TOOLBOX PANEL & BACKGROUND FIX
-========================= */
-
 .nui_bot_toolbox {
     position: absolute;
     top: 220px;
     left: 0;
-    z-index: 999;
+    z-index: 9999;
 }
-
-/* =========================
-   🔹 MENU BAR (Sol Üstteki İkon Paneli)
-========================= */
 
 .nui_bot_toolbox .bot_menu {
     width: 145px;
     height: 25px;
-    /* Resim yollarını @main ile garantiye alıyoruz */
     background: url(https://cdn.jsdelivr.net/gh/omerpisun/fsn-files@main/images/toolbox.png) no-repeat !important;
 }
 
 .nui_bot_toolbox .bot_menu ul {
     display: flex;
-    align-items: center;
-    padding: 1px 5px;
+    padding: 2px 5px;
     margin: 0;
     list-style: none;
 }
-
-.nui_bot_toolbox .bot_menu ul li {
-    width: 24px;
-    height: 24px;
-    margin-right: 3px;
-    position: relative;
-    cursor: pointer;
-}
-
-/* =========================
-   🔹 ICONS (Items Sprite)
-========================= */
 
 .nui_bot_toolbox .bot_menu ul li span {
     display: block;
     width: 24px;
     height: 24px;
     background: url(https://cdn.jsdelivr.net/gh/omerpisun/fsn-files@main/images/items-sprite.png) no-repeat !important;
-    filter: grayscale(100%);
-}
-
-/* Aktif olduğunda renkli görünsün */
-.nui_bot_toolbox .bot_menu ul li.on span,
-.nui_bot_toolbox .bot_menu ul li:hover span {
-    filter: none;
+    filter: none !important; /* Gri efekti tamamen kaldırıyoruz */
 }
 
 /* İkon Pozisyonları */
@@ -61,41 +33,11 @@ span.autobuild     { background-position: -56px 0 !important; }
 span.autoattack    { background-position: -83px 0 !important; }
 span.botsettings   { background-position: -109px 0 !important; }
 
-/* =========================
-   🔹 BOT WINDOW TABS (Yazı Çakışması Fix)
-========================= */
-
-/* Menüdeki yazıların üst üste binmesini engeller */
+/* Menü sekmeleri için ek düzeltme */
+.menu_wrapper {
+    overflow: visible !important;
+}
 .menu_inner {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    white-space: nowrap !important;
+    width: auto !important;
+    display: block !important;
 }
-
-.menu_inner li {
-    margin-right: 15px !important;
-    display: inline-block !important;
-}
-
-.menu_inner li a.submenu_link {
-    color: #fcc02e !important; /* Grepolis sarısı */
-    font-weight: bold;
-    text-shadow: 1px 1px 1px #000;
-}
-
-/* =========================
-   🔹 TERMINAL (LOG PANEL)
-========================= */
-
-.terminal {
-    padding: 10px;
-    height: 230px;
-    overflow-y: auto;
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    color: #d1d1d1;
-    background: rgba(0, 0, 0, 0.85);
-}
-
-.terminal .error   { color: #ff4d4d; }
-.terminal .success { color: #6FAE30; }
